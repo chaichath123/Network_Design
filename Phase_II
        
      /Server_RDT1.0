@@ -1,0 +1,95 @@
+/*
+ * Created By Chaichath Wiyarand and Nampop Signsumpan
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package server;
+
+/**
+ *
+ * @author ThaiTeaE
+ */
+import java.io.*;
+import java.net.*;
+
+class Server {
+
+	//variable declaration
+	static byte[] receiveData = new byte[1024];
+	static byte[] sendData = new byte[1024];
+
+	public static void main(String args[]) throws Exception
+	{	
+		Server server1 = new Server();
+
+		// Create Datagram socket for port 
+		DatagramSocket serverSocket = new DatagramSocket(12004);
+		
+
+		while(true)
+		{	System.out.println("Server is ready to receive.");
+			//Create space to receive a packet from client
+			DatagramPacket receivePacket =
+					new DatagramPacket(receiveData, receiveData.length);
+			/*
+			 * Process of receiving packet
+			 */
+			// receive packet from client
+			serverSocket.receive(receivePacket);
+			//create new string for that data
+			String sentence = new String(receivePacket.getData());
+			
+			//see if nice.jpg is requested
+			
+			if(sentence.contains("nice.jpg")){
+				
+				System.out.println("ready to send");
+				
+				readFile();
+				// get IP address, port# of the packet
+				InetAddress IPAddress = receivePacket.getAddress();
+				int port = receivePacket.getPort();
+
+				/*
+				 * Process of sending requested packet
+				 */
+				DatagramPacket sendPacket =
+						new DatagramPacket(sendData, sendData.length, IPAddress,
+								port);
+				//send packet out to socket
+				serverSocket.send(sendPacket);
+                                System.out.println("packet sent");
+			}
+			 else
+		        {  
+		            //open/create a new file with specified name
+		            FileOutputStream file = new FileOutputStream("naughty.jpg");
+		            //write file to disk
+		            file.write(receivePacket.getData());
+                            System.out.println("Return Naughty");
+		        }
+
+		} //end while look
+
+	}
+
+	/*
+	 * read into bytes
+	 */
+	public static void readFile() throws Exception
+	{
+		//open file and read into stream
+		File fileEncode = new File("nice.jpg");
+
+		//get the length of the number of bytes of the file
+		sendData  = new byte [(int)fileEncode.length()];
+
+		//read in the bytes into a buffered stream
+		FileInputStream fileInput = new FileInputStream(fileEncode);
+		BufferedInputStream buffered = new BufferedInputStream(fileInput);
+		buffered.read(sendData,0,sendData.length); 
+
+		buffered.close();
+	}
+
+}
