@@ -1,0 +1,32 @@
+/*
+ * By Chaichath Wiyarand and Nampop Signsumpan
+ */
+package client;
+
+/**
+ *
+ * @author ThaiTeaE
+ */
+import javax.swing.*;
+import javax.swing.JOptionPane;
+
+
+public class GUI_client extends JPanel {
+    
+    
+    public static void main(String[] args){
+    //Prompt and ask for input
+    String prompt = JOptionPane.showInputDialog("Please choose the following command:\n"+ "1. Send file\n" + "2. Get file\n" + "3. Exit");
+    //store input in answer(as integer)
+    int answer = Integer.parseInt(prompt);
+    
+    //
+    if (answer == 1){
+        
+        
+    }
+    else ;
+    
+    
+    }   
+}
