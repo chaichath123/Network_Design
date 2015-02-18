@@ -1,0 +1,242 @@
+/*
+ * Created By Chaichath Wiyarand and Nampop Signsumpan
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package server;
+
+/**
+ *
+ * @author ThaiTeaE
+ */
+import java.io.*;
+import java.net.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.text.DefaultCaret;
+
+
+public class Server extends JFrame {
+    
+    
+     //display panel message
+    protected GUI_server gui = new GUI_server("Server Side");
+    //buttons on panel
+    private JButton jbtQuit = new JButton("Quit Server");
+    static JTextArea jTextArea = new JTextArea();
+    static JScrollPane jScrollPane = new JScrollPane(jTextArea);
+    static DefaultCaret caret = (DefaultCaret)jTextArea.getCaret();
+       
+    public static void main(String[] args) throws Exception
+    {   
+        //create Server1 object
+        Sub_server Server1 = new Sub_server();
+        //access simu_server() object
+        Server1.simu_server();
+    }
+    
+     //method for GUI button placement and functions
+    public Server()
+    {
+        gui.setBackground(Color.white);
+        JPanel jpButtons = new JPanel();
+        jpButtons.add(jbtQuit);
+        
+    
+    //shortcut keyboard
+        jbtQuit.setMnemonic('Q');
+        
+        
+        //place panels
+        
+        setLayout(new BorderLayout());
+        add(gui, BorderLayout.CENTER);
+        add(jpButtons, BorderLayout.SOUTH);
+        
+        //Button action listeners
+        
+        //Buttons for QUIT
+           jbtQuit.addActionListener(new ActionListener()
+           {
+               public void actionPerformed(ActionEvent e){
+                   try {
+                       System.exit(0);//close
+                      
+                   } catch (Exception ex) {
+                       Logger.getLogger(
+                               Server.class.getName()).log(
+                                       Level.SEVERE, null, ex);
+                   }
+               }//end of action event
+           });//end of quit server button
+           
+    }//end of UDPserver class
+    
+}//end of public class UDPclient extends JFrame
+
+
+// Sub class for server
+class Sub_server extends Server{
+
+    //variable declaration
+    static byte[] receiveData = new byte[1024];
+    static byte[] sendData = new byte[1024];
+    static byte[] bytearray = new byte[1024];//used for file transfer
+    static byte[] newbytes = new byte[1024];
+    static byte[] packet = new byte[1024];
+    static int number;
+    static int ports = 12001;
+
+    
+    public void simu_server() throws Exception{
+        
+        // Create Datagram socket for port 
+        DatagramSocket serverSocket = new DatagramSocket(ports);
+        Server skeleton = new Server();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        skeleton.getContentPane().add(jScrollPane);
+        skeleton.setTitle("Server");
+        skeleton.setSize(300,300);
+        jTextArea.append("Thank you for using our server\nWaiting for Request \n");
+        skeleton.setLocationRelativeTo(null);
+        skeleton.setLocation(100,100);
+        skeleton.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        skeleton.setVisible(true);
+        
+        while (true) {
+            System.out.println("Server is ready to receive.");
+            //Create space to receive a packet from client
+            DatagramPacket receivePacket
+                    = new DatagramPacket(receiveData, receiveData.length);
+            /*
+             * Process of receiving packet
+             */
+            // receive packet from client
+            serverSocket.receive(receivePacket);
+            //create new string for that data
+            String sentence = new String(receivePacket.getData());
+
+            //see if nice.jpg is requested
+            if (sentence.contains("nice.jpg")) {
+
+                System.out.println("ready to send");
+                
+                
+                //readFile();
+                // get IP address, port# of the packet
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+
+                File fileTransfer = new File("naughty.jpg");
+                FileInputStream fileInput = new FileInputStream(fileTransfer);
+                ByteArrayOutputStream bytearrayed = new ByteArrayOutputStream();
+                int totalBytes = 0;
+                
+                /*
+                 * Process of sending requested packet
+                 */
+                DatagramPacket sendPacket
+                        = new DatagramPacket(bytearray, bytearray.length, IPAddress, port);
+
+                //parsing files
+                for (int readNum; (readNum = fileInput.read(bytearray)) != -1;) {
+                    bytearrayed.write(bytearray, 0, readNum);
+                    //System.out.println("Read " + readNum + " bytes,\n");
+                    jTextArea.append("Read " + readNum + " bytes,\n");
+                    newbytes = bytearrayed.toByteArray();
+
+                    sendPacket
+                            = new DatagramPacket(bytearray, bytearray.length, IPAddress, port);
+
+                      //write out datagram to socket
+            serverSocket.send(sendPacket);
+            //System.out.println("sent " + readNum + " bytes,");
+            jTextArea.append("Sent " + readNum + " bytes,\n");
+            totalBytes += readNum;
+            jTextArea.append("Total Bytes Sent: " + totalBytes+ "\n\n");
+
+                }
+                sendData = "yes".getBytes();
+                sendPacket
+                        = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+
+                serverSocket.send(sendPacket);
+                System.out.println(sendPacket.toString());
+
+            } //Client is sending file
+            else if (sentence.contains("naughty.jpg"))
+            {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+
+                sendData = "yes".getBytes();
+                DatagramPacket sendPacket
+                        = new DatagramPacket(bytearray, bytearray.length, IPAddress, port);
+
+                serverSocket.send(sendPacket);
+                System.out.println(sendPacket.toString());
+
+                FileOutputStream f = new FileOutputStream("naughty.jpg");
+                ByteArrayInputStream bin = new ByteArrayInputStream(receiveData);
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                ByteArrayOutputStream boutsize = new ByteArrayOutputStream();
+                System.out.println("Return Naughty");
+                byte[] destination = new byte[packet.length];
+
+                receivePacket
+                        = new DatagramPacket(receiveData, receiveData.length);
+
+                while (true) {
+                    serverSocket.receive(receivePacket);
+                    bout.write(receivePacket.getData());
+                    sentence = new String(receivePacket.getData());
+                    if (sentence.contains("yes")) {
+                        break;
+                    } else {
+                        //for debugging
+                   
+
+                        packet = bout.toByteArray();
+                        
+                        destination = new byte[packet.length];
+                        //assemble bytes back
+                        System.arraycopy(packet, 0, destination, 0, packet.length);
+                        //for debugging
+
+                    }
+                }
+                 // write to disk only the length of the data
+                f.write(destination, 0, destination.length);
+                //close file being written
+                f.close();
+            }
+        }
+
+    } //end while look
+
+
+
+/*
+ * read into bytes
+ */
+public static void readFile() throws Exception {
+        //open file and read into stream
+        File fileEncode = new File("nice.jpg");
+
+        //get the length of the number of bytes of the file
+        sendData = new byte[(int) fileEncode.length()];
+
+        //read in the bytes into a buffered stream
+        FileInputStream fileInput = new FileInputStream(fileEncode);
+        BufferedInputStream buffered = new BufferedInputStream(fileInput);
+        buffered.read(sendData, 0, sendData.length);
+
+        buffered.close();
+    }
+
+}
