@@ -1,0 +1,150 @@
+/*
+ * Created By Chaichath Wiyarand and Nampop Signsumpan
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package client;
+
+/**
+ *
+ * @author Chaichath Wiyarand and Nampop Signsumpan
+ *
+ * Description:
+ *
+ * The Client will be sending the information to the server as well as ask for
+ * the information with getFile and
+ */
+import java.io.*;
+import java.net.*;
+import java.util.Scanner;
+
+public class Client {
+
+    //variable declaration
+    static byte[] sendData = new byte[1024];
+    static byte[] sendData2 = new byte[1024];
+    static byte[] receiveData = new byte[1024];
+    static byte[] packet = new byte[1024];
+    static String fileName;
+    static int port = 12001;
+    static String host = "localhost";
+    //int answer;
+
+    public static void main(String Args[]) throws Exception {
+
+        System.out.println("please enter the following:");
+        System.out.println("1. Send file\n" + "2. Get file\n" + "3. Exit");
+        Scanner console = new Scanner(System.in);
+        int answer = console.nextInt();
+
+        if (answer == 1) {
+            sendFile();
+        }
+        if (answer == 2) {
+            getFile();
+            System.out.println("file recieved");
+        } else {
+            System.exit(0);
+        }
+
+    }
+    /*
+     * read into bytes
+     */
+
+    public static void readFile() throws Exception {
+        //open file and read into stream
+        File fileEncode = new File("naughty.jpg");
+
+        //get the length of the number of bytes of the file
+        sendData = new byte[(int) fileEncode.length()];
+        System.out.println(sendData);
+
+
+        //read in the bytes into a buffered stream
+        FileInputStream fileInput = new FileInputStream(fileEncode);
+        BufferedInputStream buffered = new BufferedInputStream(fileInput);
+        buffered.read(sendData, 0, sendData.length);
+
+        buffered.close();
+
+    }
+
+    public static void sendFile() throws Exception {
+
+        // create a socket 
+        DatagramSocket clientSocket = new DatagramSocket();
+        //Translate host-name to IP address using 
+        InetAddress IPAddress = InetAddress.getByName(host);
+
+        readFile();
+
+        //break fin.read(sendData) into chucks
+        int c = 0;
+        for (int num = 0; num<sendData.length; num++) {
+            
+            packet[c] = sendData[num];
+            //System.out.println("this is my btye:" + packet[c]);
+            c++;
+            if(num%1023 == 0){
+                 DatagramPacket sendPacket
+                        = new DatagramPacket(packet, packet.length, IPAddress, port);
+                 packet = new byte[1024];
+                 c = 0;
+                 
+                clientSocket.send(sendPacket);
+    
+                System.out.println("sent a mini-packet");
+            }
+        }
+
+        //client leave
+        clientSocket.close();
+    }
+
+    /*
+     * get File from server by sending request in and wait for the packet
+     */
+    public static String setFileName() {
+        fileName = "nice.jpg";
+        return fileName;
+    }
+
+    public static void getFile() throws Exception {
+        // create a socket 
+        DatagramSocket clientSocket = new DatagramSocket();
+        //Translate host-name to IP address using 
+        InetAddress IPAddress = InetAddress.getByName("localhost");
+
+        //set file name to nice
+        setFileName();
+        sendData2 = fileName.getBytes();
+        System.out.println("fileName changed");
+        /*
+         * process of sending message
+         * Create Data-gram with  Data-To-Send, length of the data, address, and port#
+         */
+        DatagramPacket sendPacket
+                = new DatagramPacket(sendData2, sendData2.length, IPAddress, 9876);
+        //send Data-gram to server 
+        clientSocket.send(sendPacket);
+        System.out.println("Sent Request");
+
+        //RECIEVED
+        //Create Data-gram with Data
+        DatagramPacket receivePacket
+                = new DatagramPacket(receiveData, receiveData.length);
+        //read Data-gram from Server
+        clientSocket.receive(receivePacket);
+
+        ///Write to file
+        //open/create a new file with specified name
+        FileOutputStream file = new FileOutputStream(fileName);
+        //write file to disk
+        file.write(receivePacket.getData());
+
+        //client leave
+        clientSocket.close();
+    }
+
+}
