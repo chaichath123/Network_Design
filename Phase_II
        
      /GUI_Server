@@ -1,0 +1,24 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package server;
+
+import javax.swing.JOptionPane;
+
+/**
+ *
+ * @author ThaiTeaE
+ */
+public class GUI_server {
+    
+    public static void main(String[] args){
+    //Prompt and ask for input
+    JOptionPane.showMessageDialog(null,"Waiting for Client");
+    //store input in answer(as integer)
+   
+    
+    }
+    
+}
