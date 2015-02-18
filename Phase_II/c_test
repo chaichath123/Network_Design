@@ -1,0 +1,265 @@
+/*
+ * Created By Chaichath Wiyarand and Nampop Signsumpan
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package client;
+
+/**
+ *
+ * @author Chaichath Wiyarand and Nampop Signsumpan
+ *
+ * Description:
+ *
+ * The Client will be sending the information to the server as well as ask for
+ * the information with getFile and
+ */
+//imported libraries
+import java.io.*;
+import java.net.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.text.*;
+
+public class Client extends JFrame {
+
+    // GUI display
+    protected GUI_client gui = new GUI_client("Client");
+    //buttons on panel
+    private JButton jbtGet = new JButton("Request File");
+    private JButton jbtSend = new JButton("Send File");
+    static JTextArea jTextArea = new JTextArea();
+    static JScrollPane jScrollPane = new JScrollPane(jTextArea);
+    static DefaultCaret caret = (DefaultCaret) jTextArea.getCaret();
+
+    public static void main(String args[]) throws Exception {
+        // create object frame of type UDPclient()
+        // UDPclient() contains objects for gui frame construction
+        Client frame = new Client();
+        frame.setTitle("Client");
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        frame.setSize(250, 250);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        frame.getContentPane().add(jScrollPane);
+        jTextArea.append("Welcome to the Client\nWaiting for Command \n");
+        frame.setVisible(true);
+
+    }
+
+    //method for GUI button placement and functions
+    public Client() {
+        gui.setBackground(Color.white);
+        JPanel jpButtons = new JPanel();
+        jpButtons.add(jbtGet);
+        jpButtons.add(jbtSend);
+
+        //shortcut keyboard
+        jbtGet.setMnemonic('G');
+        jbtSend.setMnemonic('S');
+
+        //place panels
+        setLayout(new BorderLayout());
+        add(gui, BorderLayout.CENTER);
+        add(jpButtons, BorderLayout.SOUTH);
+
+        //Button action listeners
+        //Get file button
+        jbtGet.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Sub_client Customer = new Sub_client(); //create client object
+                    Customer.setFile(); //access setFile() method
+                    Customer.getFile();//access getFile() method
+                } catch (Exception ex) {
+                    Logger.getLogger(
+                            Client.class.getName()).log(
+                                    Level.SEVERE, null, ex);
+                }
+            }//end of action event
+        });//end of get file button
+
+        //Send file button
+        jbtSend.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Sub_client Customer = new Sub_client();  //create client object
+                    Customer.setFilesend();
+                    Customer.sendFile();
+                } catch (Exception ex) {
+                    Logger.getLogger(
+                            Client.class.getName()).log(
+                                    Level.SEVERE, null, ex);
+                }
+            }//end of action event
+        });//end of send file button
+
+    }//end of UDPclient class
+
+}//end of public class UDPclient extends JFrame
+
+class Sub_client extends Client {
+
+    //init variable declaration
+    static byte[] sendData = new byte[1024];
+    static byte[] sendData2 = new byte[1024];
+    static byte[] bytearray = new byte[1024];
+    static byte[] receiveData = new byte[1024];
+    static byte[] packet = new byte[1024];
+    static byte[] newbytes = new byte[1024];
+    static String fileName;
+    static int port = 12001;
+    static String host = "localhost";
+
+    /*
+     * read into bytes
+     */
+    public static String setFile() throws Exception {
+        fileName = "nice.jpg";
+        return fileName;
+    }//end function
+
+    //setFilesending name method
+    public String setFilesend() {
+        fileName = "test.txt";
+        return fileName;
+    }//end function
+
+    //method for sending file to server
+    public static void sendFile() throws Exception {
+
+        //open Datagram socket 
+        DatagramSocket clientSocket = new DatagramSocket();
+        InetAddress IPAddress = InetAddress.getByName(host);
+
+        fileName = "naugthy.jpg";
+        sendData = fileName.getBytes();
+
+        //create datagram with data to send length
+        //ip address, port
+        DatagramPacket sendPacket
+                = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+
+        //send datagram to server
+        clientSocket.send(sendPacket);
+        System.out.println("sent");
+
+        DatagramPacket receivePacket
+                = new DatagramPacket(receiveData, receiveData.length);
+
+        //server receives datagram
+        clientSocket.receive(receivePacket);
+        int port = receivePacket.getPort();
+        //set data to sentence
+        String sentence = new String(receivePacket.getData());
+        int totalBytes = 0;
+        System.out.println("sent 2");
+        if (sentence.contains("yes"));
+        {
+
+            System.out.println("got response");
+            File fileTransfer = new File("naughty.jpg");
+            FileInputStream fileInput = new FileInputStream(fileTransfer);
+            ByteArrayOutputStream bytearrayed = new ByteArrayOutputStream();
+            sendPacket
+                    = new DatagramPacket(bytearray, bytearray.length, IPAddress, port);
+            //parse file
+            for (int readNum; (readNum = fileInput.read(bytearray)) != -1;) {
+
+                bytearrayed.write(bytearray, 0, readNum);
+                //System.out.println("Read " + readNum + " bytes,\n");
+
+                Client.jTextArea.append("Read " + readNum + " bytes,\n");
+
+                newbytes = bytearrayed.toByteArray();
+
+                sendPacket
+                        = new DatagramPacket(bytearray, bytearray.length, IPAddress, port);
+
+                //write out datagram to socket
+                clientSocket.send(sendPacket);
+             
+                Client.jTextArea.append("Sent " + readNum + " bytes,\n");
+                totalBytes += readNum;
+                jTextArea.append("Number of Bytes: " + totalBytes + "\n\n");
+
+            }
+            Client.jTextArea.append("------------------------------------------\n");
+            sendData = "yes".getBytes();
+            sendPacket
+                    = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+
+            clientSocket.send(sendPacket);
+            JOptionPane.showMessageDialog(null, "Sent");
+        }
+    }
+
+//get from server
+    public static void getFile() throws Exception {
+        //open Datagram socket 
+        DatagramSocket clientSocket = new DatagramSocket();
+        InetAddress IPAddress = InetAddress.getByName(host);
+
+        sendData = fileName.getBytes();
+
+        //create datagram with data to send length
+        //ip address, port
+        DatagramPacket sendPacket
+                = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+
+        //send datagram to server
+        clientSocket.send(sendPacket);
+
+        //Receive
+        FileOutputStream f = new FileOutputStream("nice.jpg");
+        ByteArrayInputStream bin = new ByteArrayInputStream(receiveData);
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        ByteArrayOutputStream boutsize = new ByteArrayOutputStream();
+
+        byte[] destination = new byte[packet.length];
+
+        DatagramPacket receivePacket
+                = new DatagramPacket(receiveData, receiveData.length);
+
+        String sentence;
+
+        //read datagram from server
+        while (true) {
+            clientSocket.receive(receivePacket);
+            bout.write(receivePacket.getData());
+            sentence = new String(receivePacket.getData());
+            if (sentence.contains("yes")) {
+                break;
+            } else {
+                //for debugging
+
+                packet = bout.toByteArray();
+
+                destination = new byte[packet.length];
+                System.arraycopy(packet, 0, destination, 0, packet.length);
+
+            }
+        }
+
+         //write to disk only the length of the data
+        f.write(destination,0,destination.length);
+        
+        //notification of completion
+        JOptionPane.showMessageDialog(null,"File Received");
+        
+        //close file being written
+        f.close();
+        
+        //close socket
+        clientSocket.close();
+
+    }
+
+}
