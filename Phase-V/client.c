@@ -266,10 +266,6 @@ public void createclient() throws Exception{
         //Receive
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         ByteArrayOutputStream checksumdataArray = new ByteArrayOutputStream();
-       // ByteArrayOutputStream boutCheck = new ByteArrayOutputStream();
-        //byte[] data = new byte[packet.length];;
-        //byte[] datadest = new byte[packet.length];
-     
 
         DatagramPacket receivePacket
                 = new DatagramPacket(receiveData, receiveData.length);
@@ -286,11 +282,6 @@ public void createclient() throws Exception{
 
         //read datagram from server
         while (true) {//make into rdt_rcv
-           // jScrollPane.updateUI();
-          //  jScrollPane.repaint();
-          //  clientSocket.close();
-            //Thread.sleep(205);
-            //clientSocket.connect(IPAddress, port);
             
             clientSocket.receive(receivePacket);//look
             checksumdataArray.reset();
@@ -309,7 +300,6 @@ public void createclient() throws Exception{
                //actual data file integrity
                test_pkt(checksumdataArray, receivePacket, clientSocket, bout);
 
-             
             }
                 
          
@@ -347,7 +337,6 @@ public void createclient() throws Exception{
                   
                   prevSeq = (int) sequencecount;
                   // Thread.sleep(5000);
-                   //clientSocket.wait(waittest);
                    //clientSocket.notifyAll();
                    clientSocket.send(make_pkt());
                    sequencecount++;
@@ -363,10 +352,6 @@ public void createclient() throws Exception{
               // bout.reset();
             data = new byte[0];
             
-              // bout.reset();
-              // bout.close();
-              // data = extract_data(rdt_rcv(bout),datadest);
-               // clientSocket.send(make_pkt());
            }
            else
            {
@@ -380,7 +365,6 @@ public void createclient() throws Exception{
                   //sequencecount--;
              }
                     
-        
     }
     }
     //isACK(rcvpkt,sequence)
@@ -427,15 +411,9 @@ public void createclient() throws Exception{
         
         ByteArrayOutputStream boutCheck = new ByteArrayOutputStream();
         boutCheck.flush();
-//        if (dataBitError == 0)
-//        {
-//        boutCheck.write(rcv_pkt.getData(),7,8);
-//        dataBitError++;
-//        }
-//        else
-//        {
+
            boutCheck.write(rcv_pkt.getData(),8,8); 
-//        }
+           
         checksumPacket = new byte[boutCheck.size()];
         checksumPacket = boutCheck.toByteArray();
         
