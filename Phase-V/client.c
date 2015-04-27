@@ -13,9 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.text.*;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
-
 public class UDPclient extends JFrame {
-
     //display panel message
     protected GUI gui = new GUI("Client Side");
     //buttons on panel
@@ -24,14 +22,11 @@ public class UDPclient extends JFrame {
     JTextArea jTextArea = new JTextArea();
     JScrollPane jScrollPane = new JScrollPane(jTextArea);
      DefaultCaret caret = (DefaultCaret) jTextArea.getCaret();
-
     public static void main(String args[]) throws Exception {
-
         Client client1 = new Client();
         client1.createclient();
          
     }
-
     //method for GUI button placement and functions
     public  UDPclient() {
         gui.setBackground(Color.white);
@@ -47,15 +42,11 @@ public class UDPclient extends JFrame {
         add(gui, BorderLayout.CENTER);
         add(jpButtons, BorderLayout.SOUTH);
         
-
     }//end of UDPclient class
     
     
-
 }//end of public class UDPclient extends JFrame
-
 class Client extends UDPclient {
-
     //data fields
     private byte[] sendData;//used for sending datagram
     private byte[] receiveData;//used for receiving datagram
@@ -83,7 +74,6 @@ class Client extends UDPclient {
     private int prevSeq;
     int dataBitError = 0;
    // UDPclient frame = new UDPclient();
-
     //constructor with default values
     Client() throws Exception {
         sendData = new byte[1024];
@@ -102,7 +92,6 @@ class Client extends UDPclient {
         wrongSequenceCount = 0;
         prevSeq = -1;
     }//end constructor
-
     //methods
     //setFile name method
     public String setFile() throws Exception {
@@ -135,7 +124,6 @@ public void createclient() throws Exception{
                 }
             }//end of action event
         });//end of get file button
-
         //Send file button
         frame.jbtSend.addActionListener(new ActionListener() {
             @Override
@@ -157,25 +145,19 @@ public void createclient() throws Exception{
         fname = "test.txt";
         return fname;
     }//end function
-
     //method for sending file to server
     public void send() throws Exception {
         
         //open Datagram socket 
         DatagramSocket clientSocket = new DatagramSocket();
-      //  IPAddress = InetAddress.getByName("localhost");
-
         fname = "luigi.png";
         sendData = fname.getBytes();
-
         //create datagram with data to send length
         //ip address, port
         DatagramPacket sendPacket
                 = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-
         //send datagram to server
         clientSocket.send(sendPacket);
-
         DatagramPacket receivePacket
                 = new DatagramPacket(receiveData, receiveData.length);
           
@@ -187,7 +169,6 @@ public void createclient() throws Exception{
         int totalBytes = 0;
         if (sentence.contains("yes"));
         {
-
             System.out.println("got response");
             File fileTransfer = new File("luigi.png");
             FileInputStream fileInput = new FileInputStream(fileTransfer);
@@ -196,62 +177,47 @@ public void createclient() throws Exception{
                     = new DatagramPacket(bytearray, bytearray.length, IPAddress, port);
             //parse file
             for (int readNum; (readNum = fileInput.read(bytearray)) != -1;) {
-
                 bytearrayed.write(bytearray, 0, readNum);
             //System.out.println("Read " + readNum + " bytes,\n");
-
                 jTextArea.append("Read " + readNum + " bytes,\n");
-
                 newbytes = bytearrayed.toByteArray();
-
                 sendPacket
                         = new DatagramPacket(bytearray, bytearray.length, IPAddress, port);
-
                 //write out datagram to socket
                 clientSocket.send(sendPacket);
                 //   System.out.println("sent " + readNum + " bytes,");
                 jTextArea.append("Sent " + readNum + " bytes,\n");
                 totalBytes += readNum;
                 jTextArea.append("Total Bytes Sent: " + totalBytes + "\n\n");
-
             }
             jTextArea.append("------------------------------------------\n");
             sendData = "yes".getBytes();
             sendPacket
                     = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-
             clientSocket.send(sendPacket);
             JOptionPane.showMessageDialog(null, "File Sent");
             // System.out.println(sendPacket.toString());
         }
-
     }
-
     //get from server
     public void getFile() throws Exception {
         //open Datagram socket 
         sequencecount = 0;
         DatagramSocket clientSocket = new DatagramSocket();
         InetAddress IPAddress = InetAddress.getByName("localhost");
-
         sendData = fname.getBytes();
-
         //create datagram with data to send length
         //ip address, port
         DatagramPacket sendPacket
                 = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-
         //send datagram to server
         clientSocket.send(sendPacket);
-
         //Receive
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         ByteArrayOutputStream checksumdataArray = new ByteArrayOutputStream();
-
-
+        
         DatagramPacket receivePacket
                 = new DatagramPacket(receiveData, receiveData.length);
-
         String sentence;
         
         //image frame
@@ -261,10 +227,9 @@ public void createclient() throws Exception{
          GUI panel = new GUI();
          frame2.setContentPane(panel); 
          frame2.setVisible(true);
-
         //read datagram from server
         while (true) {//make into rdt_rcv
-
+          
             clientSocket.receive(receivePacket);//look
             checksumdataArray.reset();
             //Actual Data
@@ -281,21 +246,18 @@ public void createclient() throws Exception{
                data = extract_data(rdt_rcv(bout),datadest);
                //actual data file integrity
                test_pkt(checksumdataArray, receivePacket, clientSocket, bout);
-
              
             }
                 
-         
-         frame2.repaint();//repaint image
+        frame2.repaint();//repaint image
             
         }
-
+        //deliver data
+       // deliver_data(data);
         //notification of completion
         JOptionPane.showMessageDialog(null, "File Received");
-
         //close socket
         clientSocket.close();
-
     }
     
     public void test_pkt(ByteArrayOutputStream checksumdataArray,
@@ -318,7 +280,9 @@ public void createclient() throws Exception{
                    deliver_data(data);
                   
                   prevSeq = (int) sequencecount;
-    
+                  // Thread.sleep(5000);
+                   //clientSocket.wait(waittest);
+                   //clientSocket.notifyAll();
                    clientSocket.send(make_pkt());
                    sequencecount++;
                    waittest = 0;
@@ -330,32 +294,30 @@ public void createclient() throws Exception{
                     if (prevSeq == (int) byteArrayToLong(sequence)){
                System.out.println("\nDuplicate sequence\n");
                System.out.println("Discarding Duplicate \n");
-           
+              // bout.reset();
             data = new byte[0];
-            
- 
+
            }
            else
            {
-             
+              
                  System.out.println("wrong sequence or wrong checksum");
                  prevSeq = (int) byteArrayToLong(sequence);
-        
+
                  clientSocket.send(make_pkt());
                  clientSocket.receive(receivePacket);
-                  
+                
              }
                     
         
     }
     }
-    
-	//isACK(rcvpkt,sequence)
+    //isACK(rcvpkt,sequence)
     boolean corruptTest(byte[] checksum, long calculatedChecksum) throws IOException{
         
            if (byteArrayToLong(checksum) == calculatedChecksum) {
                    long response = 1;
-                 
+                  
                    ACKbyte = getBytes(response);
                    ackStatus = true;
                    return ackStatus;
@@ -446,7 +408,7 @@ public void createclient() throws Exception{
     //deliver data to the application layer
     public void deliver_data(byte[] extractedData) 
             throws FileNotFoundException, IOException, InterruptedException{
-        FileOutputStream fileOutput = new FileOutputStream("naughty.jpg");
+        FileOutputStream fileOutput = new FileOutputStream("bird.jpg");
         fileOutput.write(extractedData, 0, extractedData.length);
         fileOutput.close();
     }//end deliver data to application layer
@@ -474,11 +436,9 @@ public void createclient() throws Exception{
         long value=0;
         long multiplier=1;
         for (int i = 7; i >= 0; i--) { //get from the right
-
             value=value+(buffer[i] & 0xff)*multiplier; // add the value * the hex multiplier
             multiplier=multiplier <<8;
             }
         return value;
    }//end byte array to long
-
 }//end class Client
