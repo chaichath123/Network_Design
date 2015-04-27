@@ -1,23 +1,5 @@
-/*
- Chaichath Wiyarand
- ID: 00729486
- UDPclient.java
- 16.483 Network Design
-    
- UDP client implemented with GUI; connects to server and gives user
- choice to send file to server or receive files from server 
-
- this code uses example of a Java client(UDP)from the book 
- Computer Networking: A Top-Down Approach 5e as a base.
- GUI is then implemented on top of the client and the code
- is implemented using an object oriented approach. 
-    
- Send file function and receive file function is added
-  
- */
 package UDPclient;
 //imported libraries
-
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
@@ -179,7 +161,6 @@ public void createclient() throws Exception{
     //method for sending file to server
     public void send() throws Exception {
         
-       // UDPclient frame = new UDPclient();
         //open Datagram socket 
         DatagramSocket clientSocket = new DatagramSocket();
       //  IPAddress = InetAddress.getByName("localhost");
@@ -267,6 +248,7 @@ public void createclient() throws Exception{
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         ByteArrayOutputStream checksumdataArray = new ByteArrayOutputStream();
 
+
         DatagramPacket receivePacket
                 = new DatagramPacket(receiveData, receiveData.length);
 
@@ -282,7 +264,7 @@ public void createclient() throws Exception{
 
         //read datagram from server
         while (true) {//make into rdt_rcv
-            
+
             clientSocket.receive(receivePacket);//look
             checksumdataArray.reset();
             //Actual Data
@@ -300,14 +282,14 @@ public void createclient() throws Exception{
                //actual data file integrity
                test_pkt(checksumdataArray, receivePacket, clientSocket, bout);
 
+             
             }
                 
          
          frame2.repaint();//repaint image
             
         }
-        //deliver data
-       // deliver_data(data);
+
         //notification of completion
         JOptionPane.showMessageDialog(null, "File Received");
 
@@ -336,8 +318,7 @@ public void createclient() throws Exception{
                    deliver_data(data);
                   
                   prevSeq = (int) sequencecount;
-                  // Thread.sleep(5000);
-                   //clientSocket.notifyAll();
+    
                    clientSocket.send(make_pkt());
                    sequencecount++;
                    waittest = 0;
@@ -349,30 +330,32 @@ public void createclient() throws Exception{
                     if (prevSeq == (int) byteArrayToLong(sequence)){
                System.out.println("\nDuplicate sequence\n");
                System.out.println("Discarding Duplicate \n");
-              // bout.reset();
+           
             data = new byte[0];
             
+ 
            }
            else
            {
-              //  ByteArrayOutputStream bout4 = new ByteArrayOutputStream();
+             
                  System.out.println("wrong sequence or wrong checksum");
                  prevSeq = (int) byteArrayToLong(sequence);
-              //   bout.close();
-               //  bout.reset();
+        
                  clientSocket.send(make_pkt());
                  clientSocket.receive(receivePacket);
-                  //sequencecount--;
+                  
              }
                     
+        
     }
     }
-    //isACK(rcvpkt,sequence)
+    
+	//isACK(rcvpkt,sequence)
     boolean corruptTest(byte[] checksum, long calculatedChecksum) throws IOException{
         
            if (byteArrayToLong(checksum) == calculatedChecksum) {
                    long response = 1;
-                  // sendData = response.getBytes();
+                 
                    ACKbyte = getBytes(response);
                    ackStatus = true;
                    return ackStatus;
@@ -412,8 +395,8 @@ public void createclient() throws Exception{
         ByteArrayOutputStream boutCheck = new ByteArrayOutputStream();
         boutCheck.flush();
 
-           boutCheck.write(rcv_pkt.getData(),8,8); 
-           
+        boutCheck.write(rcv_pkt.getData(),8,8); 
+
         checksumPacket = new byte[boutCheck.size()];
         checksumPacket = boutCheck.toByteArray();
         
@@ -463,7 +446,7 @@ public void createclient() throws Exception{
     //deliver data to the application layer
     public void deliver_data(byte[] extractedData) 
             throws FileNotFoundException, IOException, InterruptedException{
-        FileOutputStream fileOutput = new FileOutputStream("bird.jpg");
+        FileOutputStream fileOutput = new FileOutputStream("naughty.jpg");
         fileOutput.write(extractedData, 0, extractedData.length);
         fileOutput.close();
     }//end deliver data to application layer
